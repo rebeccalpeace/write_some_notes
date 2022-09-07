@@ -14,13 +14,15 @@ def signup():
     if form.validate_on_submit():
         print('Form has been validated!')
         email = form.email.data
+        first_name = form.first_name.data
+        last_name = form.last_name.data
         username = form.username.data
         password = form.password.data
         existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
         if existing_user:
             flash('A user with that username or email already exists.', 'danger')
             return redirect(url_for('signup'))
-        new_user = User(email=email, username=username, password=password)
+        new_user = User(email=email, first_name=first_name, last_name=last_name, username=username, password=password)
         flash(f"{new_user.username} has been created.", 'success')
         return redirect(url_for('index'))
     return render_template('signup.html', form=form)

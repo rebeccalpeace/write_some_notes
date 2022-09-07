@@ -4,11 +4,13 @@ from datetime import datetime, timedelta
 from app import db, login
 from werkzeug.security import generate_password_hash, check_password_hash
 from flask_login import UserMixin
-from sqlalchemy import Column, Integer, String
+from sqlalchemy import Column, Integer, String, Boolean
 
 
 class User(db.Model, UserMixin):
     id = db.Column(db.Integer, primary_key=True)
+    first_name = db.Column(db.String(100), nullable=False)
+    last_name = db.Column(db.String(100), nullable=False)
     email = db.Column(db.String(100), nullable=False, unique=True)
     username = db.Column(db.String(50), nullable=False, unique=True)
     password = db.Column(db.String(256), nullable=False)
@@ -36,6 +38,8 @@ class User(db.Model, UserMixin):
     def to_dict(self):
         return {
             "id": self.id,
+            "first_name": self.first_name,
+            "last_name": self.last_name,
             "email": self.email,
             "username": self.username,
             "answers": [a.to_dict() for a in self.answers.all()]
@@ -85,6 +89,7 @@ class Word(db.Model):
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prompt = db.Column(db.String(200), nullable=False)
+    explicit = db.Column(db.Boolean)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -98,7 +103,29 @@ class Prompt(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "prompt": self.prompt
+            "prompt": self.prompt,
+            "explicit": self.explicit
+        }
+
+class Daily(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    prompt = db.Column(db.String(200), nullable=False)
+    date_used = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        db.session.add(self)
+        db.session.commit()
+    
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "prompt": self.prompt,
+            "date_used": self.date_used
         }
     
 
@@ -113,6 +140,7 @@ class Answer(db.Model):
     line6 = db.Column(db.String(200))
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     prompt_id = db.Column(db.Integer, db.ForeignKey('prompt.id'))
+    daily_id = db.Column(db.Integer, db.ForeignKey('daily.id'))
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -134,5 +162,56 @@ class Answer(db.Model):
             "line5": self.line5,
             "line6": self.line6,
             "user_id": self.user_id,
-            "prompt_id": self.prompt_id
+            "prompt_id": self.prompt_id,
+            "daily_id": self.daily_id
+        }
+
+class Comment(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    comment = db.Column(db.String(500), nullable=False)
+    comment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    commenter_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "comment": self.id,
+            "comment_date": self.comment_date,
+            "creator_id": self.creator_id,
+            "commenter_id": self.commenter_id
+        }
+
+class Likes (db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    like = db.Column(db.Boolean, nullable=False)
+    answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'))
+    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    liker_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        db.session.add(self)
+        db.session.commit()
+
+    def delete(self):
+        db.session.delete(self)
+        db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "like": self.like,
+            "answer_id": self.answer_id,
+            "creator_id": self.creator_id,
+            "liker_id": self.liker_id
         }
