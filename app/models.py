@@ -35,7 +35,10 @@ class User(db.Model, UserMixin):
 
     def to_dict(self):
         return {
-
+            "id": self.id,
+            "email": self.email,
+            "username": self.username,
+            "answers": [a.to_dict() for a in self.answers.all()]
         }
 
     def get_token(self, expires_in=18000):
@@ -51,9 +54,6 @@ class User(db.Model, UserMixin):
         self.token_expiration = datetime.utcnow() - timedelta(seconds=1)
         db.session.commit()
         
-
-
-
 
 @login.user_loader
 def load_user(user_id):
@@ -74,10 +74,17 @@ class Word(db.Model):
         db.session.delete(self)
         db.session.commit()
 
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "word": self.word,
+            "word_length": self.word_length
+        }
+
 
 class Prompt(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    question = db.Column(db.String(200), nullable=False)
+    prompt = db.Column(db.String(200), nullable=False)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -87,11 +94,17 @@ class Prompt(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "prompt": self.prompt
+        }
     
 
 class Answer(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    image_url = db.Column(db.String(300), nullable=False)              # this will be the url for an image
+    url = db.Column(db.String(300))                         # this will be the url for an image
     line1 = db.Column(db.String(200))                            # these 6 are for each line of player's response, saved as a string of words
     line2 = db.Column(db.String(200))
     line3 = db.Column(db.String(200))
@@ -109,3 +122,17 @@ class Answer(db.Model):
     def delete(self):
         db.session.delete(self)
         db.session.commit()
+
+    def to_dict(self):
+        return {
+            "id": self.id,
+            "url": self.url,
+            "line1": self.line1,
+            "line2": self.line2,
+            "line3": self.line3,
+            "line4": self.line4,
+            "line5": self.line5,
+            "line6": self.line6,
+            "user_id": self.user_id,
+            "prompt_id": self.prompt_id
+        }
