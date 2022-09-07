@@ -170,7 +170,7 @@ class Comment(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     comment = db.Column(db.String(500), nullable=False)
     comment_date = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
-    creator_id = db.Column(db.Integer, db.ForeignKey('user.id'))
+    answer_id = db.Column(db.Integer, db.ForeignKey('answer.id'))
     commenter_id = db.Column(db.Integer, db.ForeignKey('user.id'))
 
     def __init__(self, **kwargs):
@@ -187,7 +187,7 @@ class Comment(db.Model):
             "id": self.id,
             "comment": self.id,
             "comment_date": self.comment_date,
-            "creator_id": self.creator_id,
+            "answer_id": self.answer_id,
             "commenter_id": self.commenter_id
         }
 
