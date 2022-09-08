@@ -1,12 +1,19 @@
 from app import app
 from flask import render_template, redirect, url_for, flash
 from flask_login import login_user, logout_user, login_required, current_user
-from app.forms import SignUpForm, LoginForm
-from app.models import User
+from app.forms import SignUpForm, LoginForm, WordForm
+from app.models import User, Word
 
-@app.route('/')
+@app.route('/', methods=['GET', 'POST'])
 def index():
-    return render_template('index.html')
+    form = WordForm()
+    if form.validate_on_submit():
+        word = form.word.data
+        word_length = len(form.word.data)
+        new_word = Word(word=word, word_length=word_length)
+        flash(f"{new_word.word} {new_word.word_length} has been added to the Word table",'primary')
+        return redirect(url_for('index'))
+    return render_template('index.html', form=form)
 
 @app.route('/signup', methods=['GET', 'POST'])
 def signup():
@@ -48,5 +55,6 @@ def logout():
     logout_user()
     flash('You have successfully logged out.', 'primary')
     return redirect(url_for('index'))
+
 
 

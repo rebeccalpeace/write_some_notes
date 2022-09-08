@@ -4,4 +4,14 @@
 
 {% block content %}
 <h3 class="text-center">Write Some Notes</h3>
+<form method="post">
+    {{ form.csrf_token }}
+    <div class="form-group ms-5 me-5">
+
+        {{ form.word.label }}
+        {{ form.word(class='form-control', placeholder='Enter word') }}
+
+        {{ form.submit(class='btn btn-warning w-100 mt-3')}}
+    </div>
+</form>
 {% endblock content %}
