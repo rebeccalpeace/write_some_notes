@@ -31,6 +31,16 @@ class User(db.Model, UserMixin):
         self.password = generate_password_hash(password)
         db.session.commit()
 
+    def update(self, data):
+        for key, value in data.items():
+            if key  not in ['email', 'first_name', 'last_name', 'username', 'password']:
+                continue
+            elif key == 'password': 
+                setattr(self, key, generate_password_hash(value))
+            else:
+                setattr(self, key, value)
+        db.session.commit()
+
     def delete(self):
         db.session.delete(self)
         db.session.commit()
@@ -110,7 +120,6 @@ class Prompt(db.Model):
 class Daily(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     prompt = db.Column(db.String(200), nullable=False)
-    date_used = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -124,8 +133,7 @@ class Daily(db.Model):
     def to_dict(self):
         return {
             "id": self.id,
-            "prompt": self.prompt,
-            "date_used": self.date_used
+            "prompt": self.prompt
         }
     
 
@@ -138,6 +146,7 @@ class Answer(db.Model):
     line4 = db.Column(db.String(200))
     line5 = db.Column(db.String(200))
     line6 = db.Column(db.String(200))
+    date_created = db.Column(db.DateTime, nullable=False, default=datetime.utcnow)
     user_id = db.Column(db.Integer, db.ForeignKey('user.id'))
     prompt_id = db.Column(db.Integer, db.ForeignKey('prompt.id'))
     daily_id = db.Column(db.Integer, db.ForeignKey('daily.id'))
@@ -161,6 +170,7 @@ class Answer(db.Model):
             "line4": self.line4,
             "line5": self.line5,
             "line6": self.line6,
+            "date_created": self.date_created,
             "user_id": self.user_id,
             "prompt_id": self.prompt_id,
             "daily_id": self.daily_id
