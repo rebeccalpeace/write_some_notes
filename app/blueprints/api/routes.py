@@ -163,7 +163,23 @@ def deal_prompt(user_id):
         return jsonify(deal_to_player.to_dict())
 
 
+@api.route('/words')
+@token_auth.login_required
+def deal_words():
+    # sends 50 words to front end
+    # query all words
+    words = Word.query.all()
+    # copy all words into a list
+    words_list = [i.word for i in words]
+    words_to_player = []
+    for i in range(50):
+        x = random.randint(0, len(words_list)-1)
+        popped = words_list.pop(x)
+        words_to_player.append(popped)
+    return jsonify(words_to_player)
 
+    
+    
 
 
 
