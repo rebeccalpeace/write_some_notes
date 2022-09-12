@@ -11,7 +11,7 @@ from app.models import User, Word, Prompt, Daily, Answer, Comment, Likes
 def get_token():
     user = basic_auth.current_user()
     token = user.get_token()
-    return jsonify({'token': token})
+    return jsonify({'token': token, 'token_expiration': user.token_expiration})
 
 
 @api.route('/users', methods=["POST"])
@@ -135,10 +135,11 @@ def deal_daily():
     return jsonify(daily.to_dict())
 
 
-@api.route('/prompt/<int:user_id>')
+@api.route('/prompt')
 @token_auth.login_required
-def deal_prompt(user_id):
+def deal_prompt():
     # user = User.query.get_or_404(user_id)
+    user_id = token_auth.current_user().id
     prompts = Prompt.query.count()
     seen = Answer.query.filter_by(user_id=user_id).all()
     seen_prompts = []
@@ -169,13 +170,15 @@ def deal_words():
     # sends 50 words to front end
     # query all words
     words = Word.query.all()
-    # copy all words into a list
-    words_list = [i.word for i in words]
+    # copy all words and ids into a list
+    words_list = []
+    for word in words:
+        words_list.append([word.id, word.word])
     words_to_player = []
-    for i in range(50):
+    for i in range(60):
         x = random.randint(0, len(words_list)-1)
         popped = words_list.pop(x)
-        words_to_player.append(popped)
+        words_to_player.append({"id":popped[0], "word":popped[1], "category": "toPlay"})
     return jsonify(words_to_player)
 
     
