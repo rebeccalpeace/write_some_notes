@@ -67,9 +67,10 @@ def get_answer(answer_id):
     answer = Answer.query.get_or_404(answer_id)
     return jsonify(answer.to_dict())
 
-@api.route('/answers_by_user/<int:user_id>')
+@api.route('/answers_by_user')
 @token_auth.login_required
-def get_answers_by_user(user_id):
+def get_answers_by_user():
+    user_id = token_auth.current_user().id
     answers = Answer.query.filter_by(user_id=user_id).all()
     return jsonify([a.to_dict() for a in answers])
     
@@ -123,6 +124,17 @@ def update_user(user_id):
     user.update(data)
     return jsonify(user.to_dict())
 
+@api.route('/random_by_id/<int:id>')
+@token_auth.login_required
+def get_random(id):
+    random = Prompt.query.get_or_404(id)
+    return jsonify(random.to_dict())
+
+@api.route('/daily_by_id/<int:id>')
+@token_auth.login_required
+def get_daily(id):
+    daily = Daily.query.get_or_404(id)
+    return jsonify(daily.to_dict())
 
 @api.route('/daily')
 @token_auth.login_required
@@ -157,7 +169,7 @@ def deal_prompt():
         # get a random prompt
         prompt = random.randint(1, prompts)
         # check to see if user has already answered the random prompt
-        while prompt in seen:
+        while prompt in seen_prompts:
             prompt = random.randint(1, prompts)
         # send random prompt back to front end
         deal_to_player = Prompt.query.get_or_404(prompt)
