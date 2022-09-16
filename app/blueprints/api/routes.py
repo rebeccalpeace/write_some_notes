@@ -121,6 +121,14 @@ def update_user(user_id):
         return jsonify({'error': 'You do not have access to upate this user.'}), 403
     user = User.query.get_or_404(user_id)
     data = request.json
+    email = data.get('email')
+    first_name = data.get('first_name')
+    last_name = data.get('last_name')
+    username = data.get('username')
+    password = data.get('password')
+    existing_user = User.query.filter((User.email == email) | (User.username == username)).first()
+    if existing_user.id != user_id:
+        return jsonify({'error': "User with that username and/or email already exists."}), 400
     user.update(data)
     return jsonify(user.to_dict())
 
