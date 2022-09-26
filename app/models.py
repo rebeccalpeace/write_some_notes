@@ -225,3 +225,11 @@ class Likes (db.Model):
             "creator_id": self.creator_id,
             "liker_id": self.liker_id
         }
+
+    def update(self, data):
+        for key, value in data.items():
+            if key  not in ['like']:
+                continue
+            else:
+                setattr(self, key, value)
+        db.session.commit()

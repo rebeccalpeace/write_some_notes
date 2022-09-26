@@ -201,7 +201,52 @@ def deal_words():
         words_to_player.append({"id":popped[0], "word":popped[1], "category": "toPlay"})
     return jsonify(words_to_player)
 
-    
+
+# need route that changes a like in like database with the current user id(turns flower to orange or black)
+@api.route('/likes', methods=["PUT"])
+@token_auth.login_required
+def post_likes():
+    # front end will submit the answer id, the liker id, the creator id
+    data = request.json
+    answer = data.get('answer_id')
+    creator = data.get('creator_id')
+    liker_id = token_auth.current_user().id
+    # check if liker id is in database with this certain answer id
+    # query the database for liker id, add to list
+    user_likes = Likes.query.filter_by(liker_id=liker_id, answer_id=answer).all()
+    # if answer_id in list, change boolean to opposite
+    if len(user_likes) == 0:
+        new_like = Likes(like=True, answer_id=answer, creator_id=creator, liker_id=liker_id)
+        return jsonify(new_like.to_dict()), 201
+    else:
+        user_likes[0].update({"like": not user_likes[0].like})
+        return jsonify(user_likes[0].to_dict()), 200
+
+# need route that gets the number of likes for an answer (queries like database and returns number of how many likes an answer has)
+
+# need route that checks if user has liked that answer (returns true or false to turn flower orange or black)
+
+@api.route('/user_like/<int:answer_id>', methods=["GET"])
+@token_auth.login_required
+def user_like(answer_id):
+    # front end will submit the answer_id
+    # check to see if user has liked this answer
+    # if in database return like.like
+    # else return false (if user has not liked this answer)
+    answer = answer_id
+    liker_id = token_auth.current_user().id
+    user_likes = Likes.query.filter_by(liker_id=liker_id, answer_id=answer).all()
+    if len(user_likes) == 0:
+        return jsonify({}), 200
+    else:
+        return jsonify(user_likes[0].to_dict()), 200
+      
+                
+
+
+
+
+
     
 
 
