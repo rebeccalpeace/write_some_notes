@@ -224,6 +224,14 @@ def post_likes():
 
 # need route that gets the number of likes for an answer (queries like database and returns number of how many likes an answer has)
 
+@api.route('/likes/<int:answer_id>', methods=["GET"])
+@token_auth.login_required
+def answer_likes(answer_id):
+    likes = Likes.query.filter_by(answer_id=answer_id, like=True).all()
+    if len(likes) == 0:
+        return jsonify(0), 200
+    return jsonify(len(likes))
+
 # need route that checks if user has liked that answer (returns true or false to turn flower orange or black)
 
 @api.route('/user_like/<int:answer_id>', methods=["GET"])
